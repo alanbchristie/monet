@@ -40,6 +40,9 @@ args: argparse.Namespace = parser.parse_args()
 # Create a timezone object if one was named...
 _TZ: Optional[timezone] = timezone(args.timezone) if args.timezone else None
 
+# Location of power LED (file)
+_POWER_LED_FILE: str = '/sys/class/leds/PWR/brightness'
+
 # Are we on a Raspberry PI?
 # (and user hasn't specified --no-led)
 _IS_RPI: bool = False
@@ -56,14 +59,15 @@ def power_led_on() -> None:
     (to indicate connection failure on a Raspberry Pi)
     """
     if _IS_RPI:
-        _ = os.system('echo 1 | sudo tee /sys/class/leds/PWR/brightness > /dev/null')
+        _ = os.system(f'echo 1 | sudo tee {_POWER_LED_FILE} > /dev/null')
 
         
 def power_led_off() -> None:
-    """Used to switch the bright RED power LED off (to indicate success)
+    """Used to switch the bright RED power LED off
+    (to indicate success)
     """
     if _IS_RPI:
-        _ = os.system('echo 0 | sudo tee /sys/class/leds/PWR/brightness > /dev/null')
+        _ = os.system(f'echo 0 | sudo tee {_POWER_LED_FILE} > /dev/null')
 
 
 def main() -> NoReturn:
