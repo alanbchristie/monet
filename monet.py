@@ -6,7 +6,7 @@
 #
 #   $ nohup python -u ./monet.py -t Europe/Madrid &
 #
-# When run on an RPi this code used the Power LED
+# When run on an RPi this code uses the Power LED
 # to indicate failure (unless --no-led is specified).
 # See https://www.jeffgeerling.com/blogs/jeff-geerling/controlling-pwr-act-leds-raspberry-pi
 
@@ -72,9 +72,9 @@ def main() -> NoReturn:
     failure_start: Optional[datetime] = None
     success_start: Optional[datetime] = None
 
-    # Always start with LED on...
-    # This switches the LED on even if the user has asked nto to control the LED.
-    # i.e. the RPi's default state.
+    # Always start with LED on.
+    # This switches the LED on even if the user has asked not to control the LED.
+    # i.e. it sets the RPi's default state.
     power_led_on()
     
     print(f'Monitoring network connection to "{_ADDR}" (timezone={_TZ})...')
@@ -87,6 +87,8 @@ def main() -> NoReturn:
         if isinstance(response, float):
             # Got a successful 'ping'
             if not success_start:
+                # And this is the first success
+                # (in a potential sequence)
                 if not args.no_led:
                     # Extinguish the power LED
                     # (indicates success)
@@ -104,6 +106,8 @@ def main() -> NoReturn:
         else:
             # 'ping' failed
             if not failure_start:
+                # And this is the first failure
+                # (in a potential sequence)
                 if not args.no_led:
                     # Firstly - illuminate the power LED on
                     # (to indicate failure)...
@@ -115,7 +119,7 @@ def main() -> NoReturn:
                 if success_start:
                     up_time = time_now - success_start
                 # Record the time of this failure,
-                # preventing us-reentering this block until after another success...
+                # preventing us re-entering this block until another success.
                 failure_start = time_now
                 if up_time:
                     print(f'{msg} [-] up for {up_time}')
