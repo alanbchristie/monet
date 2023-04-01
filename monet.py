@@ -23,6 +23,8 @@ from pytz import timezone
 # (it's the primary DNS server for Google DNS)
 _ADDR: str = '8.8.8.8'
 _POLL_PERIOD_S: int = 10
+_FAILURE_RETRY_COUNT: int = 3
+_RETRY_POLL_PERIOD_S: int = 1
 
 # Get command parameters
 parser: argparse.ArgumentParser =\
@@ -75,6 +77,9 @@ def main() -> NoReturn:
     """
     failure_start: Optional[datetime] = None
     success_start: Optional[datetime] = None
+    # On first failure, how often have we retried?
+    # When this reaches _FAILURE_RETRY_COUNT then it'a a failure.
+    failure_retry_count: int = 0
 
     # Always start with LED on.
     # This switches the LED on even if the user has asked not to control the LED.
@@ -83,9 +88,13 @@ def main() -> NoReturn:
     
     print(f'Monitoring network connection to "{_ADDR}" (timezone={_TZ})...')
     while True:
+        
         # Ping the remote server...
         time_now: datetime = datetime.now(_TZ).replace(microsecond=0)
         response = ping(_ADDR)
+        # Typical ping wait.
+        # During retry this may be shorter.
+        sleep_period_s: int = _POLL_PERIOD_S
         
         # Success?
         if isinstance(response, float):
@@ -107,31 +116,41 @@ def main() -> NoReturn:
                 else:
                     print(msg)
                 success_start = time_now
+                failure_retry_count = 0
         else:
             # 'ping' failed
             if not failure_start:
                 # And this is the first failure
                 # (in a potential sequence)
-                if not args.no_led:
-                    # Firstly - illuminate the power LED on
-                    # (to indicate failure)...
-                    power_led_on()
-                # And the first time in succession
-                msg = f'Connection failure at {failure_start}'
-                # How long has the connection been up?
-                up_time: Optional[timedelta] = None
-                if success_start:
-                    up_time = time_now - success_start
-                # Record the time of this failure,
-                # preventing us re-entering this block until another success.
-                failure_start = time_now
-                if up_time:
-                    print(f'{msg} [-] up for {up_time}')
+                
+                # Exhausted retry count?
+                if failure_retry_count < _FAILURE_RETRY_COUNT:
+                    # Count this failure,
+                    # and shorten the poll period (during retry attempts)
+                    failure_retry_count += 1
+                    sleep_period_s = _RETRY_POLL_PERIOD_S
+                    print(f'Failed - failure_retry_count={failure_retry_count}')
                 else:
-                    print(msg)
-                    
+                    if not args.no_led:
+                        # Firstly - illuminate the power LED on
+                        # (to indicate failure)...
+                        power_led_on()
+                    # Record the time of this failure,
+                    # preventing us re-entering this block until another success.
+                    failure_start = time_now
+                    # And the first time in succession
+                    msg = f'Connection failure at {failure_start}'
+                    # How long has the connection been up?
+                    up_time: Optional[timedelta] = None
+                    if success_start:
+                        up_time = time_now - success_start
+                    if up_time:
+                        print(f'{msg} [-] up for {up_time}')
+                    else:
+                        print(msg)
+                        
         # Pause
-        sleep(_POLL_PERIOD_S)
+        sleep(sleep_period_s)
 
 if __name__ == '__main__':
     main()
