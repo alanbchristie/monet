@@ -75,6 +75,7 @@ def power_led_off() -> None:
 def main() -> NoReturn:
     """Main loop."""
     failure_start: Optional[datetime] = None
+    failure_retry_start: Optional[datetime] = None
     success_start: Optional[datetime] = None
     # On first failure, how often have we retried?
     # When this reaches _FAILURE_RETRY_COUNT then it'a a failure.
@@ -115,6 +116,7 @@ def main() -> NoReturn:
                     print(msg)
                 success_start = time_now
                 failure_retry_count = 0
+                failure_retry_start = None
         else:
             # 'ping' failed
             if not failure_start:
@@ -123,6 +125,9 @@ def main() -> NoReturn:
 
                 # Exhausted retry count?
                 if failure_retry_count < _FAILURE_RETRY_COUNT:
+                    if failure_retry_count == 0:
+                        # First failure
+                        failure_retry_start = time_now
                     # Count this failure,
                     # and shorten the poll period (during retry attempts)
                     failure_retry_count += 1
@@ -138,7 +143,9 @@ def main() -> NoReturn:
                         power_led_on()
                     # Record the time of this failure,
                     # preventing us re-entering this block until another success.
-                    failure_start = time_now
+                    failure_start = (
+                        failure_retry_start if failure_retry_start else time_now
+                    )
                     # And the first time in succession
                     msg = f"Connection failure at {failure_start}"
                     # How long has the connection been up?
