@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Used to monitor internet connectivity.
+"""A utility to monitor internet connectivity.
 """
 
 import argparse
@@ -43,14 +43,17 @@ args: argparse.Namespace = parser.parse_args()
 _TZ: Optional[tzinfo] = timezone(args.timezone) if args.timezone else None
 
 # Location of power LED (file)
-_POWER_LED_FILE: str = "/sys/class/leds/PWR/brightness"
+_RPI_POWER_LED_FILE: str = "/sys/class/leds/PWR/brightness"
+# A file that exists only on a Raspberry Pi
+# that contains the model name.
+_RPI_FILE: str = "/sys/firmware/devicetree/base/model"
 
 # Are we on a Raspberry PI?
-# (and user hasn't specified --no-led)
+# Try to read the model file.
 _IS_RPI: bool = False
 try:
-    with open("/sys/firmware/devicetree/base/model", "r", encoding="utf-8") as m:
-        if "raspberry pi" in m.read().lower():
+    with open(_RPI_FILE, "r", encoding="utf-8") as model_file:
+        if "raspberry pi" in model_file.read().lower():
             _IS_RPI = True
 except FileNotFoundError:
     pass
@@ -61,7 +64,7 @@ def power_led_on() -> None:
     (to indicate connection failure on a Raspberry Pi)
     """
     if _IS_RPI:
-        _ = os.system(f"echo 1 | sudo tee {_POWER_LED_FILE} > /dev/null")
+        _ = os.system(f"echo 1 | sudo tee {_RPI_POWER_LED_FILE} > /dev/null")
 
 
 def power_led_off() -> None:
@@ -69,7 +72,7 @@ def power_led_off() -> None:
     (to indicate success)
     """
     if _IS_RPI:
-        _ = os.system(f"echo 0 | sudo tee {_POWER_LED_FILE} > /dev/null")
+        _ = os.system(f"echo 0 | sudo tee {_RPI_POWER_LED_FILE} > /dev/null")
 
 
 def main() -> NoReturn:
@@ -98,6 +101,9 @@ def main() -> NoReturn:
         # Success?
         if isinstance(response, float):
             # Got a successful 'ping'
+            # - always reset the failure retry count
+            failure_retry_count = 0
+            # Start of a new success sequence?
             if not success_start:
                 # And this is the first success
                 # (in a potential sequence)
@@ -115,7 +121,6 @@ def main() -> NoReturn:
                 else:
                     print(msg)
                 success_start = time_now
-                failure_retry_count = 0
                 failure_retry_start = None
         else:
             # 'ping' failed
