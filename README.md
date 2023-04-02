@@ -8,3 +8,14 @@ Form a virtual environment: -
 
     pip install -r requirements.txt
     python monet.py
+
+Or, for background monitopring you can use `nohup`: -
+
+    nohup python -u ./monet.py -t Europe/Madrid &
+
+>   When run on an RPi this code uses the [Power LED] to indicate failure,
+    unless `--no-led` is specified (see `monet.py -h`).
+
+---
+
+[power led]: https://www.jeffgeerling.com/blogs/jeff-geerling/controlling-pwr-act-leds-raspberry-pi
