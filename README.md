@@ -2,6 +2,8 @@
 
 [![lint](https://github.com/alanbchristie/monet/actions/workflows/lint.yaml/badge.svg)](https://github.com/alanbchristie/monet/actions/workflows/lint.yaml)
 
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 MOnitor NETwork - a Python utility to monitor internet connectivity.
 Written to test broadband connections. The utility
 tries to `ping` a well-known IP address (`8.8.8.8`) every 10 seconds
@@ -12,7 +14,7 @@ Form a virtual environment: -
     pip install -r requirements.txt
     python monet.py
 
-Or, for background monitopring you can use `nohup`: -
+Or, for background monitoring you can use `nohup`: -
 
     nohup python -u ./monet.py -t Europe/Madrid &
 
