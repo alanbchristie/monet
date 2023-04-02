@@ -1,4 +1,7 @@
 # MoNet
+
+[![lint](https://github.com/alanbchristie/monet/actions/workflows/lint.yaml/badge.svg)](https://github.com/alanbchristie/monet/actions/workflows/lint.yaml)
+
 MOnitor NETwork - a Python utility to monitor internet connectivity.
 Written to test broadband connections. The utility
 tries to `ping` a well-known IP address (`8.8.8.8`) every 10 seconds
