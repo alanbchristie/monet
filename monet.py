@@ -154,7 +154,7 @@ def main() -> NoReturn:
                         up_time = time_now - success_start
                         success_start = None
                     if up_time:
-                        print(f"{msg} [-] up for {up_time}")
+                        print(f"{msg} [-]   up for {up_time}")
                     else:
                         print(msg)
 
