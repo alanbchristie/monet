@@ -1,14 +1,6 @@
 #!/usr/bin/env python
 
 """Used to monitor internet connectivity.
-Run from a virtual environment with something like
-this to get the activity in "nohup.out": -
-
-   $ nohup python -u ./monet.py -t Europe/Madrid &
-
-When run on an RPi this code uses the Power LED
-to indicate failure (unless --no-led is specified).
-See https://www.jeffgeerling.com/blogs/jeff-geerling/controlling-pwr-act-leds-raspberry-pi
 """
 
 import argparse
