@@ -139,7 +139,7 @@ def main() -> NoReturn:
                     sleep_period_s = _RETRY_POLL_PERIOD_S
                     print(
                         f"Connection failure at {time_now}"
-                        f" - failure_retry_count={failure_retry_count}/{_FAILURE_RETRY_COUNT}"
+                        f" (retry {failure_retry_count}/{_FAILURE_RETRY_COUNT})"
                     )
                 else:
                     if not args.no_led:
