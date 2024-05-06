@@ -7,13 +7,15 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 MOnitor NETwork - a Python utility to monitor internet connectivity.
-Written to test broadband connections. The utility
-tries to `ping` a well-known IP address (`8.8.8.8`) every 10 seconds
-and reports when the connection is available, and when it is not.
+Written to test broadband connections. The utility tries to `ping` a well-known
+IP address (`8.8.8.8`) every 10 seconds and reports when the connection is available,
+and when it is not.
 
-A typical output will look something like the following: -
+A typical output (written to `out.txt`) will look something like this: -
 
-    Monitoring network connection to "8.8.8.8" (timezone=Europe/Madrid)...
+    ----------
+    Monitoring
+    Connection to "8.8.8.8" (timezone=Europe/Madrid)...
     Connection success at 2023-09-03 19:11:35+02:00
     Connection failure at 2023-09-04 11:23:03+02:00 (retry 1/3)
     Connection failure at 2023-09-05 02:27:54+02:00 (retry 1/3)
