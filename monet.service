@@ -1,0 +1,14 @@
+[Unit]
+Description=Python MoNet Internet Service Monitor
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/home/alan/monet/venv/bin/python /home/alan/monet/monet.py -t Europe/Madrid
+WorkingDirectory=/home/alan/monet
+Restart=always
+RestartSec=5s
+User=alan
+
+[Install]
+WantedBy=multi-user.target

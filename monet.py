@@ -5,6 +5,7 @@
 
 import argparse
 from datetime import datetime, timedelta, tzinfo
+from io import TextIOWrapper
 import os
 from time import sleep
 from typing import NoReturn, Optional
@@ -18,6 +19,7 @@ _ADDR: str = "8.8.8.8"
 _POLL_PERIOD_S: int = 10
 _FAILURE_RETRY_COUNT: int = 3
 _RETRY_POLL_PERIOD_S: int = 1
+_OUTPUT_FILE_NAME: str = "out.txt"
 
 # Get command parameters
 parser: argparse.ArgumentParser = argparse.ArgumentParser(
@@ -75,7 +77,7 @@ def power_led_off() -> None:
         _ = os.system(f"echo 0 | sudo tee {_RPI_POWER_LED_FILE} > /dev/null")
 
 
-def main() -> NoReturn:
+def main(output: TextIOWrapper) -> NoReturn:
     """Main loop."""
     failure_start: Optional[datetime] = None
     failure_retry_start: Optional[datetime] = None
@@ -89,7 +91,11 @@ def main() -> NoReturn:
     # i.e. it sets the RPi's default state.
     power_led_on()
 
-    print(f'Monitoring network connection to "{_ADDR}" (timezone={_TZ})...')
+    output.write('----------\n')
+    output.write('Monitoring\n')
+    output.write(f'Connection to "{_ADDR}" (timezone={_TZ})...\n')
+    output.flush()
+
     while True:
         # Ping the remote server...
         time_now: datetime = datetime.now(_TZ).replace(microsecond=0)
@@ -116,10 +122,11 @@ def main() -> NoReturn:
                 # Have we just emerged from a failure?
                 if failure_start:
                     down_time: timedelta = time_now - failure_start
-                    print(f"{msg} [+] down for {down_time}")
+                    output.write(f"{msg} [+] down for {down_time}\n")
                     failure_start = None
                 else:
-                    print(msg)
+                    output.write(f"{msg}\n")
+                output.flush()
                 success_start = time_now
                 failure_retry_start = None
         else:
@@ -137,9 +144,9 @@ def main() -> NoReturn:
                     # and shorten the poll period (during retry attempts)
                     failure_retry_count += 1
                     sleep_period_s = _RETRY_POLL_PERIOD_S
-                    print(
+                    output.write(
                         f"Connection failure at {time_now}"
-                        f" (retry {failure_retry_count}/{_FAILURE_RETRY_COUNT})"
+                        f" (retry {failure_retry_count}/{_FAILURE_RETRY_COUNT})\n"
                     )
                 else:
                     if not args.no_led:
@@ -159,13 +166,15 @@ def main() -> NoReturn:
                         up_time = time_now - success_start
                         success_start = None
                     if up_time:
-                        print(f"{msg} [-]   up for {up_time}")
+                        output.write(f"{msg} [-]   up for {up_time}\n")
                     else:
-                        print(msg)
+                        output.write(f"{msg}\n")
+                output.flush()
 
         # Pause
         sleep(sleep_period_s)
 
 
 if __name__ == "__main__":
-    main()
+    with open(_OUTPUT_FILE_NAME, "a", encoding="utf-8") as output_file:
+        main(output_file)

@@ -33,12 +33,38 @@ Form a virtual environment: -
     pip install -r requirements.txt
     python monet.py
 
-Or, for background monitoring you can use `nohup`: -
+Or, for background monitoring you can use `nohup` and watch `out.txt`
+to observe progress: -
 
     nohup python -u ./monet.py -t Europe/Madrid &
 
 >   When run on an RPi this code uses the [Power LED] to indicate failure,
     unless `--no-led` is specified (see `monet.py -h`).
+
+## Installation
+You typically run `monet` as a systemd service on a Raspberry Pi.
+The repository contains an example service file that you can use as a template.
+
+Clone the repository to your Pi, create an environment and install the
+requirements, and install the service file: -
+
+    git clone https://github.com/alanbchristie/monet
+    cd monet
+    python -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+
+Edit the `monet.service` file to match your needs and then install it: -
+
+    sudo cp monet.service /lib/systemd/system
+    sudo chmod 644 /lib/systemd/system/monet.service
+    sudo systemctl daemon-reload
+    sudo systemctl enable monet.service
+    sudo systemctl start monet
+
+And then reboot the Pi to make sure the service starts automatically on boot.
+
+    sudo reboot
 
 ---
 
