@@ -1,2 +1,3 @@
 [MESSAGES CONTROL]
-disable=too-many-branches
+disable=too-many-branches,
+        too-many-statements
