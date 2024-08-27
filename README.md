@@ -29,6 +29,13 @@ In the above output the program is started at 19:11:35 on the 3rd of September.
 There is a short outage at 11:23:03 on the 4th September, which recovers,
 followed by a prolonged one that starts at 02:27:54 on the 5th, recovering at 02:28:24.
 
+Additionally the program will write a report CSV file (`report.csv`) that contains
+minimal output to simplify the creation of [Numbers] spreadsheets. For the above
+output the report will look like this, consisting of the _local_ start time
+of the disruption and its duration: -
+
+    2023-09-05 02:27:54,0:00:30
+
 # Usage
 Form a virtual environment: -
 
@@ -70,4 +77,5 @@ And then reboot the Pi to make sure the service starts automatically on boot.
 
 ---
 
+[numbers]: https://www.apple.com/uk/numbers
 [power led]: https://www.jeffgeerling.com/blogs/jeff-geerling/controlling-pwr-act-leds-raspberry-pi
