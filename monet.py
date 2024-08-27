@@ -20,6 +20,7 @@ _POLL_PERIOD_S: int = 10
 _FAILURE_RETRY_COUNT: int = 3
 _RETRY_POLL_PERIOD_S: int = 1
 _OUTPUT_FILE_NAME: str = "out.txt"
+_REPORT_FILE_NAME: str = "report.csv"
 
 # Get command parameters
 parser: argparse.ArgumentParser = argparse.ArgumentParser(
@@ -77,7 +78,7 @@ def power_led_off() -> None:
         _ = os.system(f"echo 0 | sudo tee {_RPI_POWER_LED_FILE} > /dev/null")
 
 
-def main(output: TextIOWrapper) -> NoReturn:
+def main(output: TextIOWrapper, report: TextIOWrapper) -> NoReturn:
     """Main loop."""
     failure_start: Optional[datetime] = None
     failure_retry_start: Optional[datetime] = None
@@ -91,11 +92,12 @@ def main(output: TextIOWrapper) -> NoReturn:
     # i.e. it sets the RPi's default state.
     power_led_on()
 
-    output.write('----------\n')
-    output.write('Monitoring\n')
+    output.write("----------\n")
+    output.write("Monitoring\n")
     output.write(f'Connection to "{_ADDR}" (timezone={_TZ})...\n')
     output.flush()
 
+    report_start_time: Optional[str] = None
     while True:
         # Ping the remote server...
         time_now: datetime = datetime.now(_TZ).replace(microsecond=0)
@@ -124,6 +126,13 @@ def main(output: TextIOWrapper) -> NoReturn:
                     down_time: timedelta = time_now - failure_start
                     output.write(f"{msg} [+] down for {down_time}\n")
                     failure_start = None
+                    if report_start_time:
+                        # Commit the failure to the report file.
+                        # Each line consists of the start of the failure
+                        # and the duration of the failure.
+                        report.write(f"{report_start_time},{down_time}\n")
+                        report.flush()
+                        report_start_time = None
                 else:
                     output.write(f"{msg}\n")
                 output.flush()
@@ -167,6 +176,7 @@ def main(output: TextIOWrapper) -> NoReturn:
                         success_start = None
                     if up_time:
                         output.write(f"{msg} [-]   up for {up_time}\n")
+                        report_start_time = failure_start.strftime("%Y-%m-%d %H:%M:%S")
                     else:
                         output.write(f"{msg}\n")
                 output.flush()
@@ -176,5 +186,7 @@ def main(output: TextIOWrapper) -> NoReturn:
 
 
 if __name__ == "__main__":
-    with open(_OUTPUT_FILE_NAME, "a", encoding="utf-8") as output_file:
-        main(output_file)
+    with open(_OUTPUT_FILE_NAME, "a", encoding="utf-8") as output_file, open(
+        _REPORT_FILE_NAME, "a", encoding="utf-8"
+    ) as report_file:
+        main(output_file, report_file)
