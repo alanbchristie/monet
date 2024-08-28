@@ -50,7 +50,7 @@ to observe progress: -
 >   When run on an RPi this code uses the [Power LED] to indicate failure,
     unless `--no-led` is specified (see `monet.py -h`).
 
-## Installation
+## Installation (Raspberry Pi)
 You typically run `monet` as a systemd service on a Raspberry Pi.
 The repository contains an example service file that you can use as a template.
 
@@ -71,7 +71,11 @@ Edit the `monet.service` file to match your needs and then install it: -
     sudo systemctl enable monet.service
     sudo systemctl start monet
 
-And then reboot the Pi to make sure the service starts automatically on boot.
+You can inspect the status of the service with: -
+
+    systemctl status monet
+
+Now reboot the Pi to make sure the service starts automatically on boot.
 
     sudo reboot
 
