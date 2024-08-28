@@ -4,11 +4,11 @@ After=multi-user.target
 
 [Service]
 Type=idle
-ExecStart=/home/alan/monet/venv/bin/python /home/alan/monet/monet.py -t Europe/Madrid
-WorkingDirectory=/home/alan/monet
+ExecStart=/home/pi/Code/monet/venv/bin/python /home/pi/Code/monet/monet.py -t Europe/Madrid
+WorkingDirectory=/home/pi/Code/monet
 Restart=always
 RestartSec=5s
-User=alan
+User=pi
 
 [Install]
 WantedBy=multi-user.target
