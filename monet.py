@@ -10,6 +10,7 @@ import os
 from time import sleep
 from typing import NoReturn, Optional
 
+import humanize
 from ping3 import ping
 from pytz import timezone
 
@@ -124,13 +125,15 @@ def main(output: TextIOWrapper, report: TextIOWrapper) -> NoReturn:
                 # Have we just emerged from a failure?
                 if failure_start:
                     down_time: timedelta = time_now - failure_start
+                    down_time -= timedelta(microseconds=down_time.microseconds)
                     output.write(f"{msg} [+] down for {down_time}\n")
                     failure_start = None
                     if report_start_time:
                         # Commit the failure to the report file.
                         # Each line consists of the start of the failure
                         # and the duration of the failure.
-                        report.write(f"{report_start_time},{down_time}\n")
+                        humanised_time_seconds: str = humanize.precisedelta(down_time)
+                        report.write(f"{report_start_time},{humanised_time_seconds}\n")
                         report.flush()
                         report_start_time = None
                 else:
@@ -157,7 +160,8 @@ def main(output: TextIOWrapper, report: TextIOWrapper) -> NoReturn:
                         f"Connection failure at {time_now}"
                         f" (retry {failure_retry_count}/{_FAILURE_RETRY_COUNT})\n"
                     )
-                else:
+
+                if failure_retry_count == _FAILURE_RETRY_COUNT:
                     if not args.no_led:
                         # Firstly - illuminate the power LED on
                         # (to indicate failure)...
@@ -167,18 +171,15 @@ def main(output: TextIOWrapper, report: TextIOWrapper) -> NoReturn:
                     failure_start = (
                         failure_retry_start if failure_retry_start else time_now
                     )
+                    report_start_time = failure_start.strftime("%Y/%m/%d %H:%M:%S")
                     # And the first time in succession
                     msg = f"Connection failure at {failure_start}"
                     # How long has the connection been up?
-                    up_time: Optional[timedelta] = None
+                    up_time: timedelta = timedelta(0)
                     if success_start:
                         up_time = time_now - success_start
                         success_start = None
-                    if up_time:
-                        output.write(f"{msg} [-]   up for {up_time}\n")
-                        report_start_time = failure_start.strftime("%Y-%m-%d %H:%M:%S")
-                    else:
-                        output.write(f"{msg}\n")
+                    output.write(f"{msg} [-]   up for {up_time}\n")
                 output.flush()
 
         # Pause
