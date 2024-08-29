@@ -44,7 +44,7 @@ parser.add_argument(
 args: argparse.Namespace = parser.parse_args()
 
 # Create a timezone object if one was named...
-_TZ: Optional[tzinfo] = timezone(args.timezone) if args.timezone else None
+_TZ: Optional[tzinfo] = timezone(args.timezone) if args.timezone else timezone('utc')
 
 # Location of power LED (file)
 _RPI_POWER_LED_FILE: str = "/sys/class/leds/PWR/brightness"
@@ -93,9 +93,10 @@ def main(output: TextIOWrapper, report: TextIOWrapper) -> NoReturn:
     # i.e. it sets the RPi's default state.
     power_led_on()
 
+    monet_start_time: datetime = datetime.now(_TZ).replace(microsecond=0)
     output.write("----------\n")
     output.write("Monitoring\n")
-    output.write(f'Connection to "{_ADDR}" (timezone={_TZ})...\n')
+    output.write(f'Connection to "{_ADDR}" starting at {monet_start_time} (-t={_TZ})...\n')
     output.flush()
 
     report_start_time: Optional[str] = None
