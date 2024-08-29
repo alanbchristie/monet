@@ -96,7 +96,7 @@ def main(output: TextIOWrapper, report: TextIOWrapper) -> NoReturn:
     monet_start_time: datetime = datetime.now(_TZ).replace(microsecond=0)
     output.write("----------\n")
     output.write("Monitoring\n")
-    output.write(f'Connection to "{_ADDR}" starting at {monet_start_time} (-t={_TZ})...\n')
+    output.write(f'Connection to "{_ADDR}" starting at {monet_start_time} ({_TZ})...\n')
     output.flush()
 
     report_start_time: Optional[str] = None
